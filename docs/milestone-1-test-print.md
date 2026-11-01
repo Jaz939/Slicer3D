@@ -7,7 +7,7 @@ the build plate with no supports (about 2.6 ml of resin).
 | Printer | File | Layers | Est. time |
 |---|---|---|---|
 | Sonic Mini 8K | `test_plate_sonic-mini-8k.ctb` | 200 x 0.05 mm | ~49 min |
-| M5s Pro | `test_plate_photon-mono-m5s-pro.m5sp` | 100 x 0.1 mm | ~45 min |
+| M5s Pro | `test_plate_photon-mono-m5s-pro.m5sp` | 100 x 0.1 mm | ~12 min |
 
 ## Before printing
 
