@@ -1,13 +1,14 @@
 # Milestone 1 test print
 
 Print the test plate once on each printer. It holds a 10 mm cube, a 10 mm
-cylinder, a 10 mm cone and a flat "L" for checking orientation, all flat on
-the build plate with no supports (about 2.6 ml of resin).
+cylinder, a 10 mm cone and a flat "L" for checking orientation, each lifted
+5 mm on pointed supports standing on a raft (about 3.4 ml of resin).
+Scrape the raft off the plate, then snap the supports off the parts.
 
 | Printer | File | Layers | Est. time |
 |---|---|---|---|
-| Sonic Mini 8K | `test_plate_sonic-mini-8k.ctb` | 200 x 0.05 mm | ~49 min |
-| M5s Pro | `test_plate_photon-mono-m5s-pro.m5sp` | 100 x 0.1 mm | ~12 min |
+| Sonic Mini 8K | `test_plate_sonic-mini-8k.ctb` | 320 x 0.05 mm | ~1 h 15 min |
+| M5s Pro | `test_plate_photon-mono-m5s-pro.m5sp` | 160 x 0.1 mm | ~19 min |
 
 ## Before printing
 
@@ -21,10 +22,11 @@ the build plate with no supports (about 2.6 ml of resin).
 ## What to check
 
 1. **The printer accepts the file** and shows the preview, layer count and time.
-2. **The parts stick to the plate** and come off with clean shapes.
+2. **The raft sticks to the plate**, the supports hold the parts, and the
+   tips snap off leaving small marks only.
 3. **Sizes**: cube 10 x 10 x 10 mm, cylinder 10 mm across, cone 10 mm across
-   the base. Within about 0.1 to 0.2 mm is normal for resin; the first layers
-   are usually a little wider ("elephant foot").
+   the base. Within about 0.1 to 0.2 mm is normal for resin; measure away from
+   the small support marks on the bottom.
 4. **Orientation**: look down on the build plate with the printer facing
    you. The L should have its corner at the bottom left, one arm pointing
    right and one pointing away from you (as on the preview). If it is

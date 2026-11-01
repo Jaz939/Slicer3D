@@ -16,6 +16,7 @@ from . import __version__, primitives
 from .export import export
 from .printers import PRINTERS, get_printer
 from .slicer import SliceError, place_on_plate
+from .supports import SupportSettings, add_supports
 
 
 def _printer(args):
@@ -42,6 +43,15 @@ def _progress(done, total):
         print(f"\r  slicing layer {done}/{total}", end="" if done < total else "\n", flush=True)
 
 
+def _support(mesh, args):
+    if args.no_supports:
+        return mesh
+    settings = SupportSettings(lift_mm=args.lift)
+    supported = add_supports(place_on_plate(mesh, center=False), settings)
+    print(f"  added a raft and {supported.metadata['support_count']} supports, part lifted {args.lift:g} mm")
+    return supported
+
+
 def _run_export(mesh, printer, path):
     try:
         result = export(place_on_plate(mesh), printer, path, progress=_progress)
@@ -64,12 +74,13 @@ def cmd_primitive(args):
         mesh = primitives.cone(s, args.height or s)
     else:
         mesh = primitives.orientation_l(s * 2, s / 2, args.height or s / 3)
+    mesh = _support(mesh, args)
     return _run_export(mesh, printer, _output(args, printer, f"{args.shape}_{s:g}mm"))
 
 
 def cmd_test_plate(args):
     printer = _printer(args)
-    mesh = primitives.merge(primitives.test_plate(args.size))
+    mesh = primitives.merge([_support(m, args) for m in primitives.test_plate(args.size)])
     return _run_export(mesh, printer, _output(args, printer, f"test_plate_{printer.key}"))
 
 
@@ -131,6 +142,8 @@ def build_parser():
         p.add_argument("--layer-height", type=float, help="mm, default from printer profile")
         p.add_argument("--exposure", type=float, help="normal layer exposure, seconds")
         p.add_argument("--bottom-exposure", type=float, help="bottom layer exposure, seconds")
+        p.add_argument("--no-supports", action="store_true", help="print flat on the plate, no raft")
+        p.add_argument("--lift", type=float, default=5.0, help="gap under the part for supports, mm (default 5)")
 
     p = sub.add_parser("primitive", help="slice one simple shape")
     p.add_argument("shape", choices=sorted(primitives.SHAPES))

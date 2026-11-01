@@ -38,6 +38,10 @@ slicer3d primitive cone --size 15 --height 25 -p photon-mono-m5s-pro --exposure 
 slicer3d info plate.ctb --png check
 ```
 
+By default every part is lifted 5 mm onto a raft with pointed supports, so it
+comes off the plate easily. Use `--no-supports` to print flat, or `--lift 3` to
+change the gap.
+
 `info --png` saves the file's previews and a few layers as images, so you can
 check a file before printing.
 

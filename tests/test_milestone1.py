@@ -102,3 +102,17 @@ def test_reencode_real_files_byte_identical():
             layer = f.layers[i]
             raw = f._data[layer["address"]:layer["address"] + layer["length"]]
             assert m5sp.encode_image(f.layer_image(i)) == raw
+
+
+def test_supports_lift_part_onto_raft():
+    from slicer3d.supports import SupportSettings, add_supports
+    s = SupportSettings()
+    mesh = add_supports(place_on_plate(primitives.cube(10)), s)
+    assert mesh.metadata["support_count"] >= 4
+    assert mesh.bounds[0][2] == pytest.approx(0)
+    assert mesh.bounds[1][2] == pytest.approx(s.raft_thickness_mm + s.lift_mm + 10)
+    sl = Slicer(place_on_plate(mesh), SONIC_MINI_8K)
+    gap_layer = int((s.raft_thickness_mm + s.base_height_mm + 1.0) / sl.layer_height)
+    raft = sl.slice_layer(1).lit_pixels
+    pillars = sl.slice_layer(gap_layer).lit_pixels
+    assert 0 < pillars < raft / 4
