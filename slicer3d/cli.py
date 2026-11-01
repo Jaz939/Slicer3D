@@ -84,6 +84,33 @@ def cmd_test_plate(args):
     return _run_export(mesh, printer, _output(args, printer, f"test_plate_{printer.key}"))
 
 
+def cmd_slice(args):
+    from .scene import Scene
+
+    printer = _printer(args)
+    scene = Scene(printer, support_settings=SupportSettings(lift_mm=args.lift))
+    for path in args.models:
+        obj = scene.add_file(path)
+        obj.scale = args.scale / 100
+        obj.rot_x, obj.rot_y, obj.rot_z = args.rotate
+        obj.supports = not args.no_supports
+    scene.arrange()
+    for problem in scene.problems():
+        print(f"Cannot slice: {problem}", file=sys.stderr)
+    if scene.problems():
+        return 1
+    name = os.path.splitext(os.path.basename(args.models[0]))[0] if len(args.models) == 1 else "plate"
+    path = _output(args, printer, name)
+    try:
+        result = export(scene.build_mesh(), printer, path, progress=_progress)
+    except SliceError as exc:
+        print(f"Cannot slice: {exc}", file=sys.stderr)
+        return 1
+    print(result.summary())
+    print(f"Saved to {os.path.abspath(path)}")
+    return 0
+
+
 def cmd_info(args):
     import numpy as np
     from PIL import Image
@@ -134,7 +161,7 @@ def cmd_info(args):
 def build_parser():
     parser = argparse.ArgumentParser(prog="slicer3d", description="Resin slicer for Sonic Mini 8K and Photon Mono M5s Pro")
     parser.add_argument("--version", action="version", version=__version__)
-    sub = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command")
 
     def common(p):
         p.add_argument("--printer", "-p", choices=sorted(PRINTERS), required=True)
@@ -157,6 +184,17 @@ def build_parser():
     common(p)
     p.set_defaults(func=cmd_test_plate)
 
+    p = sub.add_parser("slice", help="slice STL files (laid out side by side)")
+    p.add_argument("models", nargs="+", help="STL / OBJ / 3MF files")
+    p.add_argument("--scale", type=float, default=100.0, help="percent (default 100)")
+    p.add_argument("--rotate", type=float, nargs=3, default=(0, 0, 0), metavar=("X", "Y", "Z"),
+                   help="rotation in degrees")
+    common(p)
+    p.set_defaults(func=cmd_slice)
+
+    p = sub.add_parser("gui", help="open the desktop window")
+    p.set_defaults(func=lambda args: __import__("slicer3d.gui", fromlist=["main"]).main())
+
     p = sub.add_parser("info", help="show what is inside a .ctb or .m5sp file")
     p.add_argument("file")
     p.add_argument("--png", metavar="FOLDER", help="also save previews and a few layers as PNG")
@@ -166,6 +204,9 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    if args.command is None:  # double-clicked launcher: open the window
+        from .gui import main as gui_main
+        return gui_main()
     return args.func(args)
 
 

@@ -143,4 +143,6 @@ def add_supports(mesh: trimesh.Trimesh, s: SupportSettings = SupportSettings()) 
     pieces.append(chamfered_slab(x0, y0, x1, y1, s.raft_thickness_mm, s.raft_chamfer_mm))
     combined = trimesh.util.concatenate(pieces)
     combined.metadata["support_count"] = len(points)
+    combined.metadata["part"] = part
+    combined.metadata["supports"] = trimesh.util.concatenate(pieces[1:])
     return combined
